@@ -28,6 +28,7 @@
           <div class="view" id="view-map" hidden></div>
           <div class="view" id="view-wall" hidden></div>
           <div class="view" id="view-compare" hidden></div>
+          <div class="timeline" id="timeline"></div>
           <div class="tooltip" id="tooltip" hidden></div>
           <p id="loading" class="loading">Cargando mapa…</p>
         </section>
@@ -42,8 +43,13 @@
             <h3>Comparaciones que sorprenden</h3>
             <ul class="presets" id="presets"></ul>
           </section>
+          <section class="card">
+            <h3>Imperios a escala real</h3>
+            <ul class="presets" id="presets-history"></ul>
+          </section>
           <footer class="sources">
             Contornos: Natural Earth (1:50 m). Áreas oficiales: mledoze/countries (fuente de REST Countries).
+            Fronteras históricas: historical-basemaps (A. Ourednik), GPL-3.0; son aproximadas, sobre todo antes de 1648.
             Las áreas del mapa se calculan sobre una esfera de radio 6.371 km.
           </footer>
         </aside>

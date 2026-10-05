@@ -1,5 +1,5 @@
 import { geoContains, type GeoPath, type GeoProjection } from "d3";
-import { km2Short } from "../format";
+import { km2Short, label } from "../format";
 import type { World } from "../geo/load";
 import { mercatorFactor } from "../geo/measure";
 import { clampLat, moveFeature, wrapLon } from "../geo/rotate";
@@ -85,7 +85,7 @@ export function drawGhosts(
     const top = path.bounds(g.moved)[0][1];
     const labelY = Number.isFinite(top) && top > 60 ? top - 8 : xy[1];
     const c = world.byKey.get(g.key)!;
-    const lines = [c.name, km2Short(c.area)];
+    const lines = [label(c), km2Short(c.area)];
     if (opts.mercator) lines.push(`aquí aparenta ${km2Short(c.area * mercatorFactor(g.target[1]))}`);
     lines.forEach((text, i) => {
       ctx.font = i === 0 ? "600 13px system-ui, sans-serif" : "12px system-ui, sans-serif";

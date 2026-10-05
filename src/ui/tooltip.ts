@@ -1,4 +1,4 @@
-import { esc, km2Short } from "../format";
+import { esc, km2Short, label } from "../format";
 import type { Country } from "../types";
 
 export type Tooltip = ReturnType<typeof createTooltip>;
@@ -6,7 +6,7 @@ export type Tooltip = ReturnType<typeof createTooltip>;
 export function createTooltip(el: HTMLElement) {
   return {
     show(c: Country, [x, y]: [number, number]) {
-      el.innerHTML = `<strong>${c.flag} ${esc(c.name)}</strong><span>${km2Short(c.officialArea ?? c.area)}</span>`;
+      el.innerHTML = `<strong>${c.flag} ${esc(label(c))}</strong><span>${km2Short(c.officialArea ?? c.area)}</span>`;
       el.hidden = false;
       const host = el.parentElement!.getBoundingClientRect();
       const left = Math.min(x + 14, host.width - el.offsetWidth - 8);

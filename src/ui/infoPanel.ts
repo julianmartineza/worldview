@@ -1,7 +1,8 @@
-import { esc, km, km2, km2Short, lat, pct, times } from "../format";
+import { esc, formatYear, km, km2, km2Short, lat, pct, times } from "../format";
 import type { World } from "../geo/load";
 import { LAND_AREA_KM2, mercatorFactor } from "../geo/measure";
-import { state, subscribe } from "../state";
+import { setState, state, subscribe } from "../state";
+import type { Country } from "../types";
 import { areaOf, dims, hasRemoteParts } from "./measures";
 
 const REGION: Record<string, string> = {
@@ -19,11 +20,39 @@ export function createInfoPanel(
   actions: { move(key: string): void; compare(key: string): void },
 ) {
   el.addEventListener("click", (e) => {
+    const go = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-goto]");
+    if (go) return setState({ selected: go.dataset.goto! });
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-act]");
     if (!b || !state.selected) return;
     if (b.dataset.act === "move") actions.move(state.selected);
     else actions.compare(state.selected);
   });
+
+  /** El país actual de área más parecida, para dar escala a una entidad histórica. */
+  function nearestToday(area: number): Country {
+    return world.countries.reduce((best, c) =>
+      Math.abs(Math.log(c.area / area)) < Math.abs(Math.log(best.area / area)) ? c : best,
+    );
+  }
+
+  function historyBlock(c: Country) {
+    const near = nearestToday(c.area);
+    const parent = c.parent ? world.byKey.get(c.parent) : null;
+    const parts = (c.parts ?? []).map((k) => world.byKey.get(k)!).filter(Boolean);
+    const shown = parts.slice(0, 8);
+    return `
+      <p class="mercator-note">Comparable a hoy: <button class="link" data-goto="${near.key}">${near.flag} ${esc(near.name)}</button> (${km2Short(near.area)})</p>
+      ${parent ? `<p class="note">Parte de <button class="link" data-goto="${parent.key}">${esc(parent.name)}</button>.</p>` : ""}
+      ${
+        shown.length
+          ? `<h4 class="parts-title">Territorios</h4><ul class="parts">${shown
+              .map((p) => `<li><button class="link" data-goto="${p.key}">${esc(p.name)}</button><span>${km2Short(p.area)}</span></li>`)
+              .join("")}</ul>${parts.length > shown.length ? `<p class="note">y ${parts.length - shown.length} territorios más.</p>` : ""}`
+          : ""
+      }
+      ${c.people ? `<p class="note">Pueblo o cultura sin estado: su extensión es orientativa.</p>` : ""}
+      ${c.precision === 1 ? `<p class="note">Fronteras aproximadas en la fuente (historical-basemaps).</p>` : ""}`;
+  }
 
   function render() {
     const c = state.selected ? world.byKey.get(state.selected) : null;
@@ -35,7 +64,8 @@ export function createInfoPanel(
     const area = areaOf(c);
     const f = mercatorFactor(c.anchor[1]);
     const gap = c.officialArea ? Math.abs(c.area - c.officialArea) / c.officialArea : 0;
-    const region = [c.region && REGION[c.region], c.capital && `capital ${c.capital}`]
+    const historic = c.year !== undefined;
+    const region = [historic && `Año ${formatYear(c.year!)}`, c.region && REGION[c.region], c.capital && `capital ${c.capital}`]
       .filter(Boolean)
       .join(" · ");
     el.innerHTML = `
@@ -43,7 +73,7 @@ export function createInfoPanel(
         <span class="flag" aria-hidden="true">${c.flag}</span>
         <div><h2>${esc(c.name)}</h2>${region ? `<p>${esc(region)}</p>` : ""}</div>
       </header>
-      <p class="big-number">${km2(area)}<small>${c.officialArea ? "área oficial" : "área calculada"}</small></p>
+      <p class="big-number">${km2(area)}<small>${c.officialArea ? "área oficial" : historic ? "área calculada de sus fronteras" : "área calculada"}</small></p>
       <dl class="facts">
         <div><dt>De la tierra firme del planeta</dt><dd>${pct((area / LAND_AREA_KM2) * 100)}</dd></div>
         <div><dt>Ancho este–oeste</dt><dd>${km(d.width)}</dd></div>
@@ -57,6 +87,7 @@ export function createInfoPanel(
           ? "Está cerca del ecuador: en un mapa Mercator se ve casi de su tamaño real."
           : `En un mapa Mercator se ve <strong>${times(f)}</strong> más grande que un país de igual área en el ecuador.`
       }</p>
+      ${historic ? historyBlock(c) : ""}
       ${hasRemoteParts(c) ? `<p class="note">Ancho, alto y distancia se miden sobre el territorio principal, sin islas o territorios lejanos.</p>` : ""}
       ${
         gap > 0.03

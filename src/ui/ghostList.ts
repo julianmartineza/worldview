@@ -1,4 +1,4 @@
-import { esc, km2Short, lat, times } from "../format";
+import { esc, km2Short, label, lat, times } from "../format";
 import type { World } from "../geo/load";
 import { mercatorFactor } from "../geo/measure";
 import { setState, state, subscribe } from "../state";
@@ -32,7 +32,7 @@ export function createGhostList(el: HTMLElement, world: World) {
           return `<li>
             <span class="dot" style="background:${g.color}"></span>
             <div class="ghost-text">
-              <strong>${c.flag} ${esc(c.name)}</strong>
+              <strong>${c.flag} ${esc(label(c))}</strong>
               <small>${km2Short(c.area)} · ${lat(g.target[1])}${
                 moved ? ` · en Mercator aquí se ve ${times(rel)} ${rel < 1 ? "(se encoge)" : "(se infla)"}` : ""
               }</small>

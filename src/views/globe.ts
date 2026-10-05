@@ -1,6 +1,8 @@
 import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from "d3";
 import type { World } from "../geo/load";
 import { countryAt } from "../geo/hit";
+import { activeLayer } from "../layer";
+import { drawLayer } from "./layerDraw";
 import { setState, state, subscribe } from "../state";
 import type { Country, LonLat } from "../types";
 import { makeCanvas, palette, reducedMotion, scheduler } from "./canvas";
@@ -44,27 +46,7 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
     ctx.lineWidth = 0.6;
     ctx.stroke();
 
-    ctx.beginPath();
-    path(world.collection);
-    ctx.fillStyle = pal.land;
-    ctx.fill();
-
-    for (const [c, color] of [
-      [hovered, pal.hover],
-      [state.selected ? world.byKey.get(state.selected) : null, pal.select],
-    ] as const) {
-      if (!c) continue;
-      ctx.beginPath();
-      path(c.feature);
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    path(world.borders);
-    ctx.strokeStyle = pal.landStroke;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+    drawLayer(ctx, path, world, pal, hovered, zoom);
 
     drawGhosts(ctx, path, proj, world, pal, { visible, active: activeGhost });
 
@@ -129,7 +111,7 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
     },
     up(p, moved) {
       if (!moved && !drag) {
-        const c = countryAt(world.countries, proj.invert!(p) as LonLat);
+        const c = countryAt(activeLayer().countries, proj.invert!(p) as LonLat);
         setState({ selected: c?.key ?? null });
       }
       drag = null;
@@ -143,7 +125,7 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
     hover(p) {
       const ll = p ? (proj.invert!(p) as LonLat) : null;
       const onGhost = ghostAt(ll);
-      const c = p && !onGhost ? countryAt(world.countries, ll) : null;
+      const c = p && !onGhost ? countryAt(activeLayer().countries, ll) : null;
       canvas.style.cursor = onGhost ? "grab" : c ? "pointer" : "default";
       if (c !== hovered) {
         hovered = c;

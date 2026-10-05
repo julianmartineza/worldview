@@ -3,7 +3,10 @@ import { loadWorld } from "./geo/load";
 import { setState, state, subscribe, type ViewName } from "./state";
 import { createGhostList } from "./ui/ghostList";
 import { createInfoPanel } from "./ui/infoPanel";
-import { renderPresets } from "./ui/presets";
+import { FEATURED, featuredKey, resolveFeatured } from "./geo/featured";
+import { initLayer, setYear } from "./layer";
+import { EMPIRE_PRESETS, PRESETS, renderPresets, type Preset } from "./ui/presets";
+import { createTimeline } from "./ui/timeline";
 import { createSearch } from "./ui/search";
 import { createTooltip } from "./ui/tooltip";
 import { createCompare } from "./views/compare";
@@ -16,6 +19,7 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)
 
 async function main() {
   const world = await loadWorld();
+  initLayer(world);
   $("#loading").remove();
 
   const tooltip = createTooltip($("#tooltip"));
@@ -33,7 +37,9 @@ async function main() {
   const search = createSearch($("#search"), world, {
     label: "Buscar país",
     placeholder: "Busca un país…",
-    onPick: (c) => {
+    onPick: async (c) => {
+      // Una entidad histórica se muestra en su época
+      if (c.year !== undefined && c.year !== state.year && state.view !== "compare") await setYear(c.year);
       setState({ selected: c.key });
       if (state.view === "globe") globe.flyTo(c.anchor);
     },
@@ -52,13 +58,33 @@ async function main() {
   });
   createGhostList($("#ghosts"), world);
 
-  renderPresets($("#presets"), (p) => {
-    const from = world.byIso3.get(p.from)!;
-    const to = world.byIso3.get(p.to)!;
+  async function resolve(ref: string) {
+    if (!ref.startsWith("h")) return world.byIso3.get(ref);
+    const f = FEATURED.find((x) => featuredKey(x) === ref);
+    return f ? resolveFeatured(world, f) : undefined;
+  }
+
+  async function applyPreset(p: Preset) {
+    const [from, to] = await Promise.all([resolve(p.from), resolve(p.to)]);
+    if (!from || !to) return;
+    if (p.kind === "compare") return setState({ compareA: from.key, compareB: to.key, view: "compare" });
+    // Los países actuales se ven en Mercator para notar la distorsión; los imperios, con áreas reales
+    const historic = from.year !== undefined;
+    await setYear(null);
     setState({ ghosts: [] });
     addGhost(world, from.key, to.anchor);
-    setState({ view: "map", projection: "mercator", selected: from.key, compareA: from.key, compareB: to.key });
-  });
+    setState({
+      view: "map",
+      projection: historic ? "equal" : "mercator",
+      selected: from.key,
+      compareA: from.key,
+      compareB: to.key,
+    });
+  }
+
+  renderPresets($("#presets"), PRESETS, applyPreset);
+  renderPresets($("#presets-history"), EMPIRE_PRESETS, applyPreset);
+  createTimeline($("#timeline"));
 
   document.querySelectorAll<HTMLButtonElement>(".tabs [data-view]").forEach((b) =>
     b.addEventListener("click", () => setState({ view: b.dataset.view as ViewName })),

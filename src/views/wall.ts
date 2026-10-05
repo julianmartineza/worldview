@@ -2,6 +2,7 @@ import { geoPath } from "d3";
 import { km2Short } from "../format";
 import type { World } from "../geo/load";
 import { localProjection } from "../geo/measure";
+import { activeLayer } from "../layer";
 import { setState, state, subscribe } from "../state";
 import type { Country } from "../types";
 import type { Tooltip } from "../ui/tooltip";
@@ -149,19 +150,31 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
   const hint = el.querySelector<HTMLElement>(".map-hint")!;
   const regionSelect = el.querySelector<HTMLSelectElement>("[data-region]")!;
 
-  const shapes: Shape[] = world.countries.map((c) => {
-    const p = geoPath(localProjection(c.anchor));
-    const [[x0, y0], [x1, y1]] = p.bounds(c.main);
-    return {
-      c,
-      region: c.region && c.region in REGION_NAME ? c.region : "Otros",
-      path: new Path2D(p(c.main) ?? ""),
-      x0,
-      y0,
-      w: x1 - x0,
-      h: y1 - y0,
-    };
-  });
+  const cache = new Map<number | null, Shape[]>();
+  /** Siluetas de la época activa; los pueblos sin estado no entran en el muro. */
+  function shapesNow(): Shape[] {
+    const L = activeLayer();
+    let list = cache.get(L.year);
+    if (!list) {
+      list = L.countries
+        .filter((c) => !c.people)
+        .map((c) => {
+          const p = geoPath(localProjection(c.anchor));
+          const [[x0, y0], [x1, y1]] = p.bounds(c.main);
+          return {
+            c,
+            region: c.region && c.region in REGION_NAME ? c.region : "Otros",
+            path: new Path2D(p(c.main) ?? ""),
+            x0,
+            y0,
+            w: x1 - x0,
+            h: y1 - y0,
+          };
+        });
+      cache.set(L.year, list);
+    }
+    return list;
+  }
 
   let order: Order = "area";
   let region = "";
@@ -183,11 +196,22 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
   let TOP = 64; // espacio para los controles superiores
   let BOTTOM = 56; // espacio para la nota inferior
 
+  let dirty = false;
+
   function relayout() {
+    // Oculto no tiene tamaño: se recalcula al volver a mostrarse
+    if (!size.w || state.view !== "wall") {
+      dirty = true;
+      return;
+    }
+    dirty = false;
     TOP = tools.offsetTop + tools.offsetHeight + 16;
-    BOTTOM = Math.max(hint.offsetHeight, 52) + 20;
-    const visible = region ? shapes.filter((s) => s.region === region) : shapes;
-    lay = layout(visible, order, size.w - 32, Math.max(100, size.h - TOP - BOTTOM));
+    // Se reservan tres líneas de nota aunque ahora ocupe menos: su texto cambia con el zoom
+    BOTTOM = size.h - (hint.offsetTop + hint.offsetHeight) + 3 * 19 + 20;
+    const shapes = shapesNow();
+    const historic = activeLayer().year !== null;
+    const visible = region && !historic ? shapes.filter((s) => s.region === region) : shapes;
+    lay = layout(visible, historic && order === "region" ? "area" : order, size.w - 32, Math.max(100, size.h - TOP - BOTTOM));
   }
 
   function fitTransform() {
@@ -200,6 +224,7 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
   }
 
   function fit() {
+    if (dirty) return;
     ({ k, tx, ty } = fitTransform());
     k0 = k;
     request();
@@ -283,7 +308,7 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
       ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * (sx - t.x0 * k), dpr * (sy - t.y0 * k));
       const selected = t.c.key === state.selected;
       ctx.globalAlpha = selected || t === hovered ? 1 : 0.82;
-      ctx.fillStyle = selected ? pal.select : REGION_COLOR[t.region];
+      ctx.fillStyle = selected ? pal.select : t.c.color ?? REGION_COLOR[t.region];
       ctx.fill(t.path);
       ctx.globalAlpha = 1;
       if (selected || t === hovered) {
@@ -309,6 +334,8 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
       const cy = ty + (t.y + t.h / 2) * k;
       if (cx < -100 || cx > w + 100 || cy < -40 || cy > h + 40) continue;
       const lines = sh > 44 ? [t.c.name, km2Short(t.c.officialArea ?? t.c.area)] : [t.c.name];
+      ctx.font = "600 12px system-ui, sans-serif";
+      if (ctx.measureText(t.c.name).width > sw * 2) continue;
       lines.forEach((text, i) => {
         ctx.font = i === 0 ? "600 12px system-ui, sans-serif" : "11px system-ui, sans-serif";
         const y = cy + (i - (lines.length - 1) / 2) * 14 + 4;
@@ -321,7 +348,10 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
     }
 
     const text =
-      "Todos los países a la misma escala y sin distorsión (territorio principal). Rueda o pellizco para acercar." +
+      (activeLayer().year === null
+        ? "Todos los países a la misma escala y sin distorsión (territorio principal)."
+        : "Todos los estados de esa época a la misma escala; no incluye pueblos sin estado. Fronteras aproximadas.") +
+      " Rueda o pellizco para acercar." +
       (tiny ? ` ${tiny} ${tiny === 1 ? "país es demasiado pequeño" : "países son demasiado pequeños"} para verse a esta escala.` : "");
     if (text !== lastHint) hint.textContent = lastHint = text;
   }
@@ -375,20 +405,36 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
   el.querySelector("[data-reset]")!.addEventListener("click", () => animateTo(fitTransform()));
 
   function syncControls() {
-    el.querySelectorAll<HTMLButtonElement>("[data-order]").forEach((b) =>
-      b.setAttribute("aria-checked", String(b.dataset.order === order)),
-    );
+    const historic = activeLayer().year !== null;
+    el.querySelectorAll<HTMLButtonElement>("[data-order]").forEach((b) => {
+      b.setAttribute("aria-checked", String(b.dataset.order === order || (historic && order === "region" && b.dataset.order === "area")));
+      if (b.dataset.order === "region") b.hidden = historic;
+    });
+    // Los continentes solo aplican a los países actuales
+    regionSelect.closest("label")!.hidden = historic;
+    el.querySelector<HTMLElement>(".legend")!.hidden = historic;
   }
   syncControls();
 
   let lastSelected = state.selected;
   let lastView = state.view;
+  let lastYear = state.year;
   subscribe(() => {
+    if (state.year !== lastYear) {
+      lastYear = state.year;
+      syncControls();
+      relayout();
+      fit();
+    }
     const entered = state.view === "wall" && lastView !== "wall";
     const changed = state.selected !== lastSelected;
     lastView = state.view;
     lastSelected = state.selected;
     if (state.view !== "wall") return;
+    if (entered && dirty) {
+      relayout();
+      fit();
+    }
     const c = state.selected ? world.byKey.get(state.selected) : null;
     // Al entrar se espera un cuadro para que el canvas tenga tamaño
     if (c && (changed || entered)) requestAnimationFrame(() => focus(c));

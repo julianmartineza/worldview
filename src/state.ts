@@ -11,6 +11,8 @@ export interface State {
   compareA: string | null;
   compareB: string | null;
   compareFull: boolean;
+  /** Época mostrada: null = hoy */
+  year: number | null;
 }
 
 export const state: State = {
@@ -22,6 +24,7 @@ export const state: State = {
   compareA: null,
   compareB: null,
   compareFull: false,
+  year: null,
 };
 
 const listeners = new Set<() => void>();
@@ -33,5 +36,12 @@ export function subscribe(fn: () => void) {
 
 export function setState(patch: Partial<State>) {
   Object.assign(state, patch);
-  listeners.forEach((fn) => fn());
+  // Un suscriptor que falla no debe dejar a los demás sin actualizar
+  listeners.forEach((fn) => {
+    try {
+      fn();
+    } catch (err) {
+      console.error(err);
+    }
+  });
 }

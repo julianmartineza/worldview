@@ -29,6 +29,27 @@ const SKIP = new Set(["Ashmore and Cartier Is."]);
 export const normalize = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+export function makeCountry(key: string, f: Geo, m: CountryMeta, alias = "", extra: Partial<Country> = {}): Country {
+  const anchor = anchorOf(f);
+  return {
+    key,
+    iso3: m.iso3,
+    name: m.name,
+    officialName: m.officialName ?? null,
+    flag: m.flag,
+    capital: m.capital ?? null,
+    region: m.region ?? null,
+    officialArea: m.area,
+    area: areaKm2(f),
+    feature: f,
+    main: mainTerritory(f, anchor),
+    anchor,
+    bounds: geoBounds(f) as [LonLat, LonLat],
+    search: normalize(`${m.name} ${m.officialName ?? ""} ${alias} ${m.iso3 ?? ""}`),
+    ...extra,
+  };
+}
+
 export function buildWorld(topo: Topology, meta: Record<string, CountryMeta>): World {
   const obj = topo.objects.countries as GeometryCollection;
   const fc = feature(topo, obj) as unknown as FeatureCollection;
@@ -37,24 +58,7 @@ export function buildWorld(topo: Topology, meta: Record<string, CountryMeta>): W
     const name = (f.properties as { name: string }).name;
     if (SKIP.has(name)) continue;
     const key = String(f.id ?? name);
-    const m = meta[key] ?? { iso3: null, name, area: null, flag: "" };
-    const anchor = anchorOf(f);
-    countries.push({
-      key,
-      iso3: m.iso3,
-      name: m.name,
-      officialName: m.officialName ?? null,
-      flag: m.flag,
-      capital: m.capital ?? null,
-      region: m.region ?? null,
-      officialArea: m.area,
-      area: areaKm2(f),
-      feature: f,
-      main: mainTerritory(f, anchor),
-      anchor,
-      bounds: geoBounds(f) as [LonLat, LonLat],
-      search: normalize(`${m.name} ${m.officialName ?? ""} ${name} ${m.iso3 ?? ""}`),
-    });
+    countries.push(makeCountry(key, f, meta[key] ?? { iso3: null, name, area: null, flag: "" }, name));
   }
   countries.sort((a, b) => a.name.localeCompare(b.name, "es"));
   return {

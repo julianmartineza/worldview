@@ -33,6 +33,17 @@ export interface Country {
   anchor: LonLat;
   bounds: [LonLat, LonLat];
   search: string;
+  /** Solo entidades históricas: año del corte (negativo = a. C.) */
+  year?: number;
+  /** 1 aproximada, 2 moderada, 3 fijada por derecho internacional */
+  precision?: number;
+  color?: string;
+  /** Imperio al que pertenece una parte */
+  parent?: string;
+  /** Partes de un imperio, de mayor a menor */
+  parts?: string[];
+  /** Pueblo o cultura sin estado: se dibuja pero no compite en tamaños */
+  people?: boolean;
 }
 
 export interface Ghost {

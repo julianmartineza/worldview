@@ -11,6 +11,8 @@ import {
 } from "d3";
 import type { World } from "../geo/load";
 import { countryAt } from "../geo/hit";
+import { activeLayer } from "../layer";
+import { drawLayer } from "./layerDraw";
 import { setState, state, subscribe } from "../state";
 import type { Country, LonLat } from "../types";
 import type { Tooltip } from "../ui/tooltip";
@@ -115,27 +117,7 @@ export function createMap(el: HTMLElement, world: World, tooltip: Tooltip) {
     ctx.lineWidth = 0.6;
     ctx.stroke();
 
-    ctx.beginPath();
-    path(world.collection);
-    ctx.fillStyle = pal.land;
-    ctx.fill();
-
-    for (const [c, color] of [
-      [hovered, pal.hover],
-      [state.selected ? world.byKey.get(state.selected) : null, pal.select],
-    ] as const) {
-      if (!c) continue;
-      ctx.beginPath();
-      path(c.feature);
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    path(world.borders);
-    ctx.strokeStyle = pal.landStroke;
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
+    drawLayer(ctx, path, world, pal, hovered, k);
 
     if (state.tissot) {
       ctx.beginPath();
@@ -179,7 +161,7 @@ export function createMap(el: HTMLElement, world: World, tooltip: Tooltip) {
     },
     up(p, moved) {
       if (!moved && !drag) {
-        const c = countryAt(world.countries, invert(p));
+        const c = countryAt(activeLayer().countries, invert(p));
         setState({ selected: c?.key ?? null });
       }
       drag = null;
@@ -199,7 +181,7 @@ export function createMap(el: HTMLElement, world: World, tooltip: Tooltip) {
     hover(p) {
       const ll = p ? invert(p) : null;
       const onGhost = ghostAt(ll);
-      const c = p && !onGhost ? countryAt(world.countries, ll) : null;
+      const c = p && !onGhost ? countryAt(activeLayer().countries, ll) : null;
       canvas.style.cursor = onGhost ? "grab" : c ? "pointer" : "default";
       if (c !== hovered) {
         hovered = c;

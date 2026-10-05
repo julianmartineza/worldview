@@ -26,3 +26,12 @@ export function times(n: number) {
 
 export const esc = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+export function formatYear(y: number) {
+  return y < 0 ? `${-y} a. C.` : String(y);
+}
+
+/** Nombre con el año para entidades históricas: "Imperio mongol (1279)". */
+export function label(c: { name: string; year?: number }) {
+  return c.year === undefined ? c.name : `${c.name} (${formatYear(c.year)})`;
+}

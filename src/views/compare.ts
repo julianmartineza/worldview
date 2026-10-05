@@ -1,5 +1,5 @@
 import { geoPath } from "d3";
-import { esc, km, km2, num1, pct, times } from "../format";
+import { esc, km, km2, label, num1, pct, times } from "../format";
 import type { World } from "../geo/load";
 import { LAND_AREA_KM2, localProjection } from "../geo/measure";
 import { setState, state, subscribe } from "../state";
@@ -104,7 +104,7 @@ export function createCompare(
       items
         .map(
           (i) => `<g class="shape shape-${i.slot}" data-slot="${i.slot}" transform="${transform(i.slot)}">
-            <path d="${i.d}" vector-effect="non-scaling-stroke"><title>${esc(i.c.name)}</title></path></g>`,
+            <path d="${i.d}" vector-effect="non-scaling-stroke"><title>${esc(label(i.c))}</title></path></g>`,
         )
         .join("") +
       `<g class="scalebar" transform="translate(${pad},${H - 14})">
@@ -148,8 +148,8 @@ export function createCompare(
     const r = areaOf(big) / areaOf(small);
     headline.innerHTML =
       r < 1.05
-        ? `<strong>${esc(A.name)}</strong> y <strong>${esc(B.name)}</strong> tienen casi el mismo tamaño.`
-        : `<strong>${esc(big.name)}</strong> es <strong>${times(r)}</strong> el tamaño de <strong>${esc(small.name)}</strong>. ${esc(small.name)} ocupa el ${pct((100 / r))} de ${esc(big.name)}.`;
+        ? `<strong>${esc(label(A))}</strong> y <strong>${esc(label(B))}</strong> tienen casi el mismo tamaño.`
+        : `<strong>${esc(label(big))}</strong> es <strong>${times(r)}</strong> el tamaño de <strong>${esc(label(small))}</strong>. ${esc(label(small))} ocupa el ${pct((100 / r))} de ${esc(label(big))}.`;
 
     const dA = dims(A);
     const dB = dims(B);
@@ -163,13 +163,13 @@ export function createCompare(
           ["b", B],
         ]
           .map(
-            ([slot, c]) => `<div class="bar-row"><span>${(c as Country).flag} ${esc((c as Country).name)}</span>
+            ([slot, c]) => `<div class="bar-row"><span>${(c as Country).flag} ${esc(label(c as Country))}</span>
             <div class="bar"><i class="${slot}" style="width:${(areaOf(c as Country) / max) * 100}%"></i></div></div>`,
           )
           .join("")}
       </div>
       <table>
-        <thead><tr><th></th><th><span class="swatch a"></span>${esc(A.name)}</th><th><span class="swatch b"></span>${esc(B.name)}</th><th>A/B</th></tr></thead>
+        <thead><tr><th></th><th><span class="swatch a"></span>${esc(label(A))}</th><th><span class="swatch b"></span>${esc(label(B))}</th><th>A/B</th></tr></thead>
         <tbody>
           ${row("Área", km2(areaOf(A)), km2(areaOf(B)), areaOf(A) / areaOf(B))}
           ${row("Ancho E–O", km(dA.width), km(dB.width), dA.width / dB.width)}
@@ -178,7 +178,7 @@ export function createCompare(
           ${row("Del planeta", pct((areaOf(A) / LAND_AREA_KM2) * 100), pct((areaOf(B) / LAND_AREA_KM2) * 100))}
         </tbody>
       </table>
-      <button class="btn" data-map>Ver ${esc(A.name)} sobre ${esc(B.name)} en el mapa</button>`;
+      <button class="btn" data-map>Ver ${esc(label(A))} sobre ${esc(label(B))} en el mapa</button>`;
   }
 
   let key = "";
