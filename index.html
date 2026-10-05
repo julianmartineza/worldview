@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Compara el tamaño real de los países del mundo, sin la distorsión de los mapas comunes." />
+    <title>Tamaño real</title>
+  </head>
+  <body>
+    <div class="app" data-view="globe">
+      <header class="top">
+        <div class="brand">
+          <h1>Tamaño real</h1>
+          <p>El mundo según lo que de verdad mide cada país</p>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Vistas">
+          <button role="tab" data-view="globe" aria-selected="true">Globo</button>
+          <button role="tab" data-view="map" aria-selected="false">Mapa plano</button>
+          <button role="tab" data-view="compare" aria-selected="false">Comparar</button>
+        </nav>
+      </header>
+      <main class="layout">
+        <section class="stage" aria-label="Mapa">
+          <div class="view" id="view-globe">
+            <p class="globe-hint">Arrastra para girar · rueda o pellizco para acercar · toca un país</p>
+          </div>
+          <div class="view" id="view-map" hidden></div>
+          <div class="view" id="view-compare" hidden></div>
+          <div class="tooltip" id="tooltip" hidden></div>
+          <p id="loading" class="loading">Cargando mapa…</p>
+        </section>
+        <aside class="side">
+          <div id="search"></div>
+          <section class="card" id="info" aria-live="polite"></section>
+          <section class="card">
+            <h3>Países en movimiento</h3>
+            <div id="ghosts"></div>
+          </section>
+          <section class="card">
+            <h3>Comparaciones que sorprenden</h3>
+            <ul class="presets" id="presets"></ul>
+          </section>
+          <footer class="sources">
+            Contornos: Natural Earth (1:50 m). Áreas oficiales: mledoze/countries (fuente de REST Countries).
+            Las áreas del mapa se calculan sobre una esfera de radio 6.371 km.
+          </footer>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
