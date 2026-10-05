@@ -16,6 +16,7 @@
         <nav class="tabs" role="tablist" aria-label="Vistas">
           <button role="tab" data-view="globe" aria-selected="true">Globo</button>
           <button role="tab" data-view="map" aria-selected="false">Mapa plano</button>
+          <button role="tab" data-view="wall" aria-selected="false">A escala</button>
           <button role="tab" data-view="compare" aria-selected="false">Comparar</button>
         </nav>
       </header>
@@ -25,6 +26,7 @@
             <p class="globe-hint">Arrastra para girar · rueda o pellizco para acercar · toca un país</p>
           </div>
           <div class="view" id="view-map" hidden></div>
+          <div class="view" id="view-wall" hidden></div>
           <div class="view" id="view-compare" hidden></div>
           <div class="tooltip" id="tooltip" hidden></div>
           <p id="loading" class="loading">Cargando mapa…</p>

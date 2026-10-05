@@ -9,6 +9,7 @@ import { createTooltip } from "./ui/tooltip";
 import { createCompare } from "./views/compare";
 import { createGlobe } from "./views/globe";
 import { createMap } from "./views/equalArea";
+import { createWall } from "./views/wall";
 import { addGhost } from "./views/truesize";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
@@ -20,6 +21,7 @@ async function main() {
   const tooltip = createTooltip($("#tooltip"));
   const globe = createGlobe($("#view-globe"), world, tooltip);
   createMap($("#view-map"), world, tooltip);
+  createWall($("#view-wall"), world, tooltip);
   createCompare($("#view-compare"), world, {
     showOnMap(a, b) {
       setState({ ghosts: [] });
@@ -42,7 +44,7 @@ async function main() {
       const c = world.byKey.get(key)!;
       // Aparece desplazado para que se distinga del original
       addGhost(world, key, [c.anchor[0] + 15, c.anchor[1] > 60 ? c.anchor[1] - 15 : c.anchor[1]]);
-      if (state.view === "compare") setState({ view: "map" });
+      if (state.view !== "globe" && state.view !== "map") setState({ view: "map" });
     },
     compare(key) {
       setState({ compareA: key, view: "compare" });

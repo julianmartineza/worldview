@@ -2,7 +2,8 @@
 
 Comparador interactivo del tamaño real de los países: globo 3D, mapa de áreas iguales
 (Equal Earth ↔ Mercator), países arrastrables que conservan su área y comparación
-a escala entre dos países.
+a escala entre dos países. La pestaña «A escala» muestra todos los países juntos, a la misma
+escala y sin distorsión, ordenados por tamaño, continente o nombre.
 
 ## Uso
 

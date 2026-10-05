@@ -1,6 +1,6 @@
 import type { Ghost } from "./types";
 
-export type ViewName = "globe" | "map" | "compare";
+export type ViewName = "globe" | "map" | "wall" | "compare";
 
 export interface State {
   view: ViewName;
