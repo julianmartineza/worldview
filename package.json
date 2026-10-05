@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "data": "node scripts/build-data.mjs",
-    "history": "node scripts/build-history.mjs"
+    "history": "node scripts/build-history.mjs",
+    "relief": "node --max-old-space-size=4096 scripts/build-relief.mjs"
   },
   "dependencies": {
     "d3": "^7.9.0",
@@ -24,6 +25,8 @@
     "@types/topojson-server": "^3.0.4",
     "@types/topojson-simplify": "^3.0.3",
     "@types/topojson-specification": "^1.0.5",
+    "h5wasm": "^0.10.3",
+    "jpeg-js": "^0.4.4",
     "topojson-server": "^3.0.1",
     "topojson-simplify": "^3.0.3",
     "typescript": "^7.0.2",

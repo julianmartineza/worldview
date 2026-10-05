@@ -251,3 +251,25 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .timeline label { display: none; }
   .timeline output { min-width: 5.5em; font-size: 13px; }
 }
+
+/* Relieve */
+#view-globe canvas { position: absolute; inset: 0; }
+#view-globe canvas.relief-gl { pointer-events: none; }
+.relief-status { font-size: 13px; color: var(--muted); }
+.relief-legend {
+  position: absolute; z-index: 5; top: 58px; left: 16px; width: 230px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 10px; font-size: 11px; color: var(--muted);
+}
+.relief-bar {
+  height: 10px; border-radius: 3px;
+  background: linear-gradient(to right, #0a2240 0%, #14395e 12%, #20527f 25%, #3474a6 37%, #60a0c8 46%, #b2dae8 57%,
+    #709860 57.5%, #92ac6c 62%, #bebe8c 68%, #c4a576 76%, #a07e60 84%, #8a7062 90%, #d6d0c8 95%, #fafafa 100%);
+}
+.relief-ticks { position: relative; height: 15px; margin: 3px 0 2px; font-variant-numeric: tabular-nums; }
+.relief-ticks span { position: absolute; top: 0; }
+.relief-ticks span:nth-child(1) { left: 0; }
+/* El nivel del mar cae en 8.000 / 14.000 = 57 % de la barra */
+.relief-ticks span:nth-child(2) { left: 57%; transform: translateX(-50%); }
+.relief-ticks span:nth-child(3) { right: 0; }
+.relief-legend small { display: block; line-height: 1.3; }

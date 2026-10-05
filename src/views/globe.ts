@@ -8,6 +8,7 @@ import type { Country, LonLat } from "../types";
 import { makeCanvas, palette, reducedMotion, scheduler } from "./canvas";
 import { attachGestures } from "./gestures";
 import { drawGhosts, ghostAt, ghostDrag } from "./truesize";
+import { createRelief } from "./reliefGL";
 import type { Tooltip } from "../ui/tooltip";
 
 export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
@@ -21,7 +22,59 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
   let activeGhost: number | null = null;
   let flight = 0;
 
-  const { canvas, ctx, size } = makeCanvas(el, () => request());
+  const relief = createRelief(el);
+  let reliefOn = false;
+  try {
+    reliefOn = relief.supported && localStorage.getItem("relief") === "1";
+  } catch {
+    // Sin almacenamiento: el relieve arranca apagado
+  }
+  const dark = matchMedia("(prefers-color-scheme: dark)");
+
+  el.insertAdjacentHTML(
+    "beforeend",
+    `<div class="map-tools">
+      <label class="check" ${relief.supported ? "" : 'title="Tu navegador no admite WebGL2"'}>
+        <input type="checkbox" data-relief ${relief.supported ? "" : "disabled"}> Relieve de tierra y mar
+      </label>
+      <span class="relief-status" aria-live="polite"></span>
+    </div>
+    <div class="relief-legend" hidden>
+      <div class="relief-bar"></div>
+      <div class="relief-ticks"><span>−8.000 m</span><span>0</span><span>6.000 m</span></div>
+      <small>ETOPO 2022 · NOAA. Sombreado realzado; la esfera no se deforma.</small>
+    </div>`,
+  );
+  const reliefInput = el.querySelector<HTMLInputElement>("[data-relief]")!;
+  const reliefStatus = el.querySelector<HTMLElement>(".relief-status")!;
+  const legend = el.querySelector<HTMLElement>(".relief-legend")!;
+
+  async function setRelief(on: boolean) {
+    reliefOn = on;
+    reliefInput.checked = on;
+    legend.hidden = !on;
+    try {
+      localStorage.setItem("relief", on ? "1" : "0");
+    } catch {
+      // Preferencia no guardada; no afecta al uso
+    }
+    if (on && !relief.ready) {
+      reliefStatus.textContent = "cargando relieve…";
+      try {
+        await relief.load(Math.min(size.w, size.h) * (window.devicePixelRatio || 1) > 1000);
+        reliefStatus.textContent = "";
+      } catch {
+        reliefStatus.textContent = "no se pudo cargar el relieve";
+      }
+    }
+    request();
+  }
+  reliefInput.addEventListener("change", () => setRelief(reliefInput.checked));
+
+  const { canvas, ctx, size } = makeCanvas(el, () => {
+    relief.resize(size.w, size.h);
+    request();
+  });
   const path = geoPath(proj, ctx);
   const request = scheduler(draw);
   const center = (): LonLat => [-rotation[0], -rotation[1]];
@@ -34,19 +87,27 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
     proj.scale(r).translate([w / 2, h / 2]).rotate([rotation[0], rotation[1], 0]);
     const pal = palette();
     ctx.clearRect(0, 0, w, h);
+    const showRelief = reliefOn && relief.ready;
 
-    ctx.beginPath();
-    path({ type: "Sphere" });
-    ctx.fillStyle = pal.ocean;
-    ctx.fill();
+    if (showRelief) {
+      relief.render({ scale: r, translate: [w / 2, h / 2], rotate: rotation }, dark.matches ? 0.82 : 1);
+    } else {
+      relief.clear();
+      ctx.beginPath();
+      path({ type: "Sphere" });
+      ctx.fillStyle = pal.ocean;
+      ctx.fill();
+    }
 
     ctx.beginPath();
     path(graticule);
     ctx.strokeStyle = pal.grat;
     ctx.lineWidth = 0.6;
+    ctx.globalAlpha = showRelief ? 0.6 : 1;
     ctx.stroke();
+    ctx.globalAlpha = 1;
 
-    drawLayer(ctx, path, world, pal, hovered, zoom);
+    drawLayer(ctx, path, world, pal, hovered, zoom, showRelief);
 
     drawGhosts(ctx, path, proj, world, pal, { visible, active: activeGhost });
 
@@ -71,6 +132,7 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
       draw();
     }
     requestAnimationFrame(spin);
+  if (reliefOn) setRelief(true);
   }
   requestAnimationFrame(spin);
 
