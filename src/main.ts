@@ -1,4 +1,5 @@
 import "./styles.css";
+import { lang, switchLang, translateDocument, tr, type Lang } from "./i18n";
 import { loadWorld } from "./geo/load";
 import { setState, state, subscribe, type ViewName } from "./state";
 import { createGhostList } from "./ui/ghostList";
@@ -16,6 +17,38 @@ import { createWall } from "./views/wall";
 import { addGhost } from "./views/truesize";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+
+translateDocument();
+document.querySelectorAll<HTMLButtonElement>(".lang [data-lang]").forEach((b) => {
+  b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  b.addEventListener("click", () => {
+    saveCarry();
+    switchLang(b.dataset.lang as Lang);
+  });
+});
+
+// Lo que se está viendo sobrevive a la recarga que hace el cambio de idioma
+const CARRY = "carry";
+type Carry = Pick<typeof state, "view" | "selected" | "year" | "projection" | "compareA" | "compareB">;
+
+function saveCarry() {
+  const { view, selected, year, projection, compareA, compareB } = state;
+  try {
+    sessionStorage.setItem(CARRY, JSON.stringify({ view, selected, year, projection, compareA, compareB }));
+  } catch {
+    // Se empieza de cero en el otro idioma
+  }
+}
+
+function takeCarry(): Carry | null {
+  try {
+    const raw = sessionStorage.getItem(CARRY);
+    sessionStorage.removeItem(CARRY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 async function main() {
   const world = await loadWorld();
@@ -35,8 +68,8 @@ async function main() {
   });
 
   const search = createSearch($("#search"), world, {
-    label: "Buscar país",
-    placeholder: "Busca un país…",
+    label: tr("Buscar país", "Search country"),
+    placeholder: tr("Busca un país…", "Search a country…"),
     onPick: async (c) => {
       // Una entidad histórica se muestra en su época
       if (c.year !== undefined && c.year !== state.year && state.view !== "compare") await setYear(c.year);
@@ -103,9 +136,23 @@ async function main() {
   const col = world.byIso3.get("COL");
   const esp = world.byIso3.get("ESP");
   setState({ compareA: col?.key ?? null, compareB: esp?.key ?? null });
+
+  const carry = takeCarry();
+  if (carry) {
+    if (carry.year !== null) await setYear(carry.year);
+    // Las entidades de otras épocas solo existen si su año ya se cargó
+    const known = (k: string | null) => (k && world.byKey.has(k) ? k : null);
+    setState({
+      view: carry.view,
+      projection: carry.projection,
+      selected: known(carry.selected),
+      compareA: known(carry.compareA) ?? state.compareA,
+      compareB: known(carry.compareB) ?? state.compareB,
+    });
+  }
 }
 
 main().catch((err) => {
   console.error(err);
-  $("#loading").textContent = "No se pudieron cargar los datos del mapa.";
+  $("#loading").textContent = tr("No se pudieron cargar los datos del mapa.", "Could not load the map data.");
 });

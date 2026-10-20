@@ -6,6 +6,7 @@ import { clampLat, moveFeature, wrapLon } from "../geo/rotate";
 import { setState, state } from "../state";
 import type { Ghost, LonLat } from "../types";
 import type { Palette } from "./canvas";
+import { tr } from "../i18n";
 
 const COLORS = ["#e4572e", "#2e86de", "#17a398", "#d4a017", "#8e5bd6", "#d63384"];
 let nextId = 1;
@@ -86,7 +87,7 @@ export function drawGhosts(
     const labelY = Number.isFinite(top) && top > 60 ? top - 8 : xy[1];
     const c = world.byKey.get(g.key)!;
     const lines = [label(c), km2Short(c.area)];
-    if (opts.mercator) lines.push(`aquí aparenta ${km2Short(c.area * mercatorFactor(g.target[1]))}`);
+    if (opts.mercator) lines.push(`${tr("aquí aparenta", "looks like here")} ${km2Short(c.area * mercatorFactor(g.target[1]))}`);
     lines.forEach((text, i) => {
       ctx.font = i === 0 ? "600 13px system-ui, sans-serif" : "12px system-ui, sans-serif";
       const y = labelY === xy[1] ? xy[1] + (i - (lines.length - 1) / 2) * 15 + 4 : labelY - (lines.length - 1 - i) * 15;

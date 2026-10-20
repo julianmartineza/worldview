@@ -3,6 +3,7 @@ import { FEATURED, featuredKey, resolveFeatured, type Featured } from "../geo/fe
 import { normalize, type World } from "../geo/load";
 import { activeLayer } from "../layer";
 import type { Country } from "../types";
+import { tr } from "../i18n";
 
 type Result = { c: Country; f?: undefined } | { f: Featured; c?: undefined };
 
@@ -56,7 +57,7 @@ export function createSearch(
           `<li role="option" id="${id}-${i}" aria-selected="${i === active}" data-i="${i}">${
             r.c
               ? `<span>${r.c.flag} ${esc(label(r.c))}</span><small>${km2Short(r.c.officialArea ?? r.c.area)}</small>`
-              : `<span>${esc(r.f.name)} (${formatYear(r.f.year)})</span><small>histórico</small>`
+              : `<span>${esc(r.f.name)} (${formatYear(r.f.year)})</span><small>${tr("histórico", "historical")}</small>`
           }</li>`,
       )
       .join("");

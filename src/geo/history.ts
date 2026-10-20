@@ -4,7 +4,7 @@ import type { GeometryCollection, GeometryObject, Topology } from "topojson-spec
 import type { Country, Geo } from "../types";
 import { makeCountry, type World } from "./load";
 import { geoArea } from "d3";
-import { esName, isPeople } from "./historyNames";
+import { isPeople, localName } from "./historyNames";
 
 interface Props {
   /** NAME original */
@@ -80,7 +80,7 @@ export function buildYear(topo: Topology, year: number): Layer {
         const part = makeCountry(
           `${key}:${n}`,
           asFeature(topo, gs),
-          { iso3: null, name: esName(n, year, false), area: null, flag: "" },
+          { iso3: null, name: localName(n, year, false), area: null, flag: "" },
           n,
           { year, color, parent: key, people: isPeople(n), precision: Math.min(...gs.map((g) => P(g).p)) },
         );
@@ -90,7 +90,7 @@ export function buildYear(topo: Topology, year: number): Layer {
     parts.push(...memberKeys);
 
     countries.push(
-      makeCountry(key, asFeature(topo, list), { iso3: null, name: esName(gk, year, hasParts), area: null, flag: "" }, gk, {
+      makeCountry(key, asFeature(topo, list), { iso3: null, name: localName(gk, year, hasParts), area: null, flag: "" }, gk, {
         year,
         color: isPeople(gk) ? "#8a8f98" : color,
         people: isPeople(gk),

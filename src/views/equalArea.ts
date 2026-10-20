@@ -19,6 +19,7 @@ import type { Tooltip } from "../ui/tooltip";
 import { makeCanvas, palette, reducedMotion, scheduler } from "./canvas";
 import { attachGestures } from "./gestures";
 import { drawGhosts, ghostAt, ghostDrag } from "./truesize";
+import { tr } from "../i18n";
 
 // Semiancho y semialto de Equal Earth en unidades de la proyección cruda
 const EE_X = 2.7064;
@@ -52,12 +53,12 @@ export function createMap(el: HTMLElement, world: World, tooltip: Tooltip) {
   el.insertAdjacentHTML(
     "beforeend",
     `<div class="map-tools">
-      <div class="seg" role="radiogroup" aria-label="Proyección">
-        <button role="radio" data-proj="equal">Áreas reales</button>
+      <div class="seg" role="radiogroup" aria-label="${tr("Proyección", "Projection")}">
+        <button role="radio" data-proj="equal">${tr("Áreas reales", "True areas")}</button>
         <button role="radio" data-proj="mercator">Mercator</button>
       </div>
-      <label class="check"><input type="checkbox" data-tissot> Círculos de distorsión</label>
-      <button class="ghost-btn" data-reset title="Volver a la vista completa">Recentrar</button>
+      <label class="check"><input type="checkbox" data-tissot> ${tr("Círculos de distorsión", "Distortion circles")}</label>
+      <button class="ghost-btn" data-reset title="${tr("Volver a la vista completa", "Back to the full view")}">${tr("Recentrar", "Recenter")}</button>
     </div>
     <p class="map-hint"></p>`,
   );
@@ -198,12 +199,21 @@ export function createMap(el: HTMLElement, world: World, tooltip: Tooltip) {
     );
     el.querySelector<HTMLInputElement>("[data-tissot]")!.checked = state.tissot;
     const tissotNote = state.tissot
-      ? ` Todos los círculos miden lo mismo en la realidad (${TISSOT_DEG}° de radio, unos 278 km).`
+      ? tr(
+          ` Todos los círculos miden lo mismo en la realidad (${TISSOT_DEG}° de radio, unos 278 km).`,
+          ` All circles are the same size in reality (${TISSOT_DEG}° radius, about 278 km).`,
+        )
       : "";
     hint.textContent =
       (state.projection === "mercator"
-        ? "Así se ven Google Maps y casi todos los mapas escolares: cuanto más lejos del ecuador, más se infla. Arrastra un país hacia el ecuador y mira cómo se encoge."
-        : "Proyección Equal Earth: cada país ocupa en pantalla un área proporcional a la real. Busca un país y pulsa «Mover» para llevarlo encima de otro.") +
+        ? tr(
+            "Así se ven Google Maps y casi todos los mapas escolares: cuanto más lejos del ecuador, más se infla. Arrastra un país hacia el ecuador y mira cómo se encoge.",
+            "This is how Google Maps and most school maps look: the farther from the equator, the more it inflates. Drag a country toward the equator and watch it shrink.",
+          )
+        : tr(
+            "Proyección Equal Earth: cada país ocupa en pantalla un área proporcional a la real. Busca un país y pulsa «Mover» para llevarlo encima de otro.",
+            "Equal Earth projection: each country takes up screen area proportional to its real area. Search a country and press “Move” to place it over another.",
+          )) +
       tissotNote;
   }
 

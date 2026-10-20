@@ -1,4 +1,5 @@
 import { esc } from "../format";
+import { tr } from "../i18n";
 
 /** Un país actual (código ISO3) o una entidad histórica destacada (su key). */
 export type Ref = string;
@@ -16,38 +17,38 @@ export const PRESETS: Preset[] = [
   {
     from: "GRL",
     to: "COD",
-    title: "Groenlandia sobre África",
-    text: "En los mapas comunes parece tan grande como África. Cabe 14 veces en ella.",
+    title: tr("Groenlandia sobre África", "Greenland over Africa"),
+    text: tr("En los mapas comunes parece tan grande como África. Cabe 14 veces en ella.", "On common maps it looks as big as Africa. It fits inside it 14 times."),
   },
   {
     from: "RUS",
     to: "CAF",
-    title: "Rusia sobre África",
-    text: "El país más grande del mundo ocupa poco más de la mitad de África.",
+    title: tr("Rusia sobre África", "Russia over Africa"),
+    text: tr("El país más grande del mundo ocupa poco más de la mitad de África.", "The world's largest country covers just over half of Africa."),
   },
   {
     from: "COL",
     to: "DEU",
-    title: "Colombia sobre Europa",
-    text: "Es más grande que Francia y Alemania juntas.",
+    title: tr("Colombia sobre Europa", "Colombia over Europe"),
+    text: tr("Es más grande que Francia y Alemania juntas.", "It is larger than France and Germany combined."),
   },
   {
     from: "BRA",
     to: "USA",
-    title: "Brasil sobre Estados Unidos",
-    text: "Brasil supera a los 48 estados contiguos de EE. UU.",
+    title: tr("Brasil sobre Estados Unidos", "Brazil over the United States"),
+    text: tr("Brasil supera a los 48 estados contiguos de EE. UU.", "Brazil is larger than the 48 contiguous US states."),
   },
   {
     from: "AUS",
     to: "POL",
-    title: "Australia sobre Europa",
-    text: "Casi el doble de la Unión Europea.",
+    title: tr("Australia sobre Europa", "Australia over Europe"),
+    text: tr("Casi el doble de la Unión Europea.", "Almost twice the European Union."),
   },
   {
     from: "IDN",
     to: "DEU",
-    title: "Indonesia sobre Europa",
-    text: "De punta a punta mide más que de Lisboa a Moscú.",
+    title: tr("Indonesia sobre Europa", "Indonesia over Europe"),
+    text: tr("De punta a punta mide más que de Lisboa a Moscú.", "End to end it spans more than Lisbon to Moscow."),
   },
 ];
 
@@ -57,50 +58,50 @@ export const EMPIRE_PRESETS: Preset[] = [
     kind: "compare",
     from: "h1279:Mongol Empire",
     to: "RUS",
-    title: "Imperio mongol frente a Rusia",
-    text: "En 1279 ocupaba 1,6 veces la Rusia actual.",
+    title: tr("Imperio mongol frente a Rusia", "Mongol Empire vs. Russia"),
+    text: tr("En 1279 ocupaba 1,6 veces la Rusia actual.", "In 1279 it covered 1.6 times present-day Russia."),
   },
   {
     kind: "ghost",
     from: "h100:Roman Empire",
     to: "USA",
-    title: "Imperio romano sobre Estados Unidos",
-    text: "En el año 100 abarcaba la mitad de lo que hoy mide EE. UU.",
+    title: tr("Imperio romano sobre Estados Unidos", "Roman Empire over the United States"),
+    text: tr("En el año 100 abarcaba la mitad de lo que hoy mide EE. UU.", "In the year 100 it spanned half the size of today's US."),
   },
   {
     kind: "ghost",
     from: "h1530:Inca Empire",
     to: "DEU",
-    title: "Imperio inca sobre Europa",
-    text: "Casi 4.000 km de punta a punta, más que de Lisboa a Moscú.",
+    title: tr("Imperio inca sobre Europa", "Inca Empire over Europe"),
+    text: tr("Casi 4.000 km de punta a punta, más que de Lisboa a Moscú.", "Almost 4,000 km end to end, more than Lisbon to Moscow."),
   },
   {
     kind: "compare",
     from: "h1783:Spain",
     to: "ESP",
-    title: "Imperio español frente a España",
-    text: "En 1783 medía 26 veces la España actual.",
+    title: tr("Imperio español frente a España", "Spanish Empire vs. Spain"),
+    text: tr("En 1783 medía 26 veces la España actual.", "In 1783 it was 26 times the size of present-day Spain."),
   },
   {
     kind: "compare",
     from: "h1783:Spain:Viceroyalty of New Granada",
     to: "COL",
-    title: "Nueva Granada frente a Colombia",
-    text: "El virreinato de 1783 casi triplicaba la Colombia actual.",
+    title: tr("Nueva Granada frente a Colombia", "New Granada vs. Colombia"),
+    text: tr("El virreinato de 1783 casi triplicaba la Colombia actual.", "The 1783 viceroyalty was almost three times present-day Colombia."),
   },
   {
     kind: "compare",
     from: "h1960:USSR",
     to: "RUS",
-    title: "La URSS frente a Rusia",
-    text: "Rusia conserva casi el 80 % del territorio soviético.",
+    title: tr("La URSS frente a Rusia", "The USSR vs. Russia"),
+    text: tr("Rusia conserva casi el 80 % del territorio soviético.", "Russia keeps almost 80% of the Soviet territory."),
   },
   {
     kind: "compare",
     from: "h-323:Empire of Alexander",
     to: "BRA",
-    title: "Alejandro Magno frente a Brasil",
-    text: "Su imperio ocupaba poco más de la mitad de Brasil.",
+    title: tr("Alejandro Magno frente a Brasil", "Alexander the Great vs. Brazil"),
+    text: tr("Su imperio ocupaba poco más de la mitad de Brasil.", "His empire covered just over half of Brazil."),
   },
 ];
 

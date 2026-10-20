@@ -4,11 +4,14 @@ import type { FeatureCollection, MultiLineString } from "geojson";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import type { Country, Geo, LonLat } from "../types";
 import { anchorOf, areaKm2, mainTerritory } from "./measure";
+import { lang } from "../i18n";
 
 export interface CountryMeta {
   iso3: string | null;
   name: string;
   officialName?: string;
+  nameEn?: string;
+  officialNameEn?: string;
   area: number | null;
   capital?: string | null;
   region?: string | null;
@@ -31,11 +34,13 @@ export const normalize = (s: string) =>
 
 export function makeCountry(key: string, f: Geo, m: CountryMeta, alias = "", extra: Partial<Country> = {}): Country {
   const anchor = anchorOf(f);
+  const en = lang === "en";
+  const name = (en && m.nameEn) || m.name;
   return {
     key,
     iso3: m.iso3,
-    name: m.name,
-    officialName: m.officialName ?? null,
+    name,
+    officialName: (en ? m.officialNameEn : m.officialName) ?? null,
     flag: m.flag,
     capital: m.capital ?? null,
     region: m.region ?? null,
@@ -45,7 +50,8 @@ export function makeCountry(key: string, f: Geo, m: CountryMeta, alias = "", ext
     main: mainTerritory(f, anchor),
     anchor,
     bounds: geoBounds(f) as [LonLat, LonLat],
-    search: normalize(`${m.name} ${m.officialName ?? ""} ${alias} ${m.iso3 ?? ""}`),
+    // Se encuentra escribiendo en cualquiera de los dos idiomas
+    search: normalize(`${m.name} ${m.officialName ?? ""} ${m.nameEn ?? ""} ${m.officialNameEn ?? ""} ${alias} ${m.iso3 ?? ""}`),
     ...extra,
   };
 }
@@ -60,7 +66,7 @@ export function buildWorld(topo: Topology, meta: Record<string, CountryMeta>): W
     const key = String(f.id ?? name);
     countries.push(makeCountry(key, f, meta[key] ?? { iso3: null, name, area: null, flag: "" }, name));
   }
-  countries.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  countries.sort((a, b) => a.name.localeCompare(b.name, lang));
   return {
     countries,
     byKey: new Map(countries.map((c) => [c.key, c])),

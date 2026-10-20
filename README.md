@@ -8,6 +8,8 @@ muestra las fronteras de 48 momentos, del 2000 a. C. a 2010, y permite medir, mo
 imperios (mongol, romano, inca, español, británico, la URSS…) contra los países de hoy.
 El globo tiene un modo de **relieve de tierra y mar** (ETOPO 2022) dibujado con WebGL bajo
 los contornos; el sombreado está realzado para que se lea, pero la esfera no se deforma.
+La interfaz está en **español e inglés**: el selector ES/EN de la cabecera recarga la página en el
+otro idioma conservando la vista, y `?lang=en` o `?lang=es` en la URL fija el idioma al compartir un enlace.
 
 ## Uso
 
@@ -25,6 +27,9 @@ npm run relief   # regenera public/data/relief/ (requiere ETOPO_FILE, ver el scr
 ```
 
 ## Cómo funciona
+
+- Los textos se traducen con `tr("español", "english")` (`src/i18n.ts`); el HTML estático lleva el inglés en
+  atributos `data-en` y `data-en-<atributo>`. Los nombres de países vienen de mledoze/countries en ambos idiomas.
 
 - Las áreas se calculan sobre la esfera (`d3.geoArea` × R², R = 6.371 km), no en píxeles.
 - Mover un país es una rotación de la esfera (`src/geo/rotate.ts`): conserva forma y área.

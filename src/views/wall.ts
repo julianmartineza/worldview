@@ -8,18 +8,19 @@ import type { Country } from "../types";
 import type { Tooltip } from "../ui/tooltip";
 import { makeCanvas, palette, reducedMotion, scheduler } from "./canvas";
 import { attachGestures } from "./gestures";
+import { lang, tr } from "../i18n";
 
 type Order = "area" | "region" | "name";
 
 const REGIONS = ["Asia", "Africa", "Americas", "Europe", "Oceania", "Antarctic", "Otros"] as const;
 const REGION_NAME: Record<string, string> = {
   Asia: "Asia",
-  Africa: "África",
-  Americas: "América",
-  Europe: "Europa",
-  Oceania: "Oceanía",
-  Antarctic: "Antártida",
-  Otros: "Otros territorios",
+  Africa: tr("África", "Africa"),
+  Americas: tr("América", "Americas"),
+  Europe: tr("Europa", "Europe"),
+  Oceania: tr("Oceanía", "Oceania"),
+  Antarctic: tr("Antártida", "Antarctica"),
+  Otros: tr("Otros territorios", "Other territories"),
 };
 const REGION_COLOR: Record<string, string> = {
   Asia: "#e4572e",
@@ -105,7 +106,7 @@ function layoutWith(shapes: Shape[], order: Order, width: number, gap: number): 
   const byArea = (a: Shape, b: Shape) => b.c.area - a.c.area;
 
   if (order !== "region") {
-    const sorted = [...shapes].sort(order === "area" ? byArea : (a, b) => a.c.name.localeCompare(b.c.name, "es"));
+    const sorted = [...shapes].sort(order === "area" ? byArea : (a, b) => a.c.name.localeCompare(b.c.name, lang));
     const { tiles, bottom } = pack(sorted, width, gap, 0);
     return { tiles, headers: [], width, height: bottom - gap };
   }
@@ -129,18 +130,18 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
   el.insertAdjacentHTML(
     "beforeend",
     `<div class="map-tools">
-      <div class="seg" role="radiogroup" aria-label="Orden">
-        <button role="radio" data-order="area">Por tamaño</button>
-        <button role="radio" data-order="region">Por continente</button>
+      <div class="seg" role="radiogroup" aria-label="${tr("Orden", "Order")}">
+        <button role="radio" data-order="area">${tr("Por tamaño", "By size")}</button>
+        <button role="radio" data-order="region">${tr("Por continente", "By continent")}</button>
         <button role="radio" data-order="name">A–Z</button>
       </div>
-      <label class="check">Mostrar
-        <select data-region aria-label="Filtrar por continente">
-          <option value="">todo el mundo</option>
+      <label class="check">${tr("Mostrar", "Show")}
+        <select data-region aria-label="${tr("Filtrar por continente", "Filter by continent")}">
+          <option value="">${tr("todo el mundo", "the whole world")}</option>
           ${REGIONS.slice(0, 6).map((r) => `<option value="${r}">${REGION_NAME[r]}</option>`).join("")}
         </select>
       </label>
-      <button class="ghost-btn" data-reset>Recentrar</button>
+      <button class="ghost-btn" data-reset>${tr("Recentrar", "Recenter")}</button>
       <div class="legend">${REGIONS.slice(0, 6)
         .map((r) => `<span><i style="background:${REGION_COLOR[r]}"></i>${REGION_NAME[r]}</span>`)
         .join("")}</div>
@@ -349,10 +350,22 @@ export function createWall(el: HTMLElement, world: World, tooltip: Tooltip) {
 
     const text =
       (activeLayer().year === null
-        ? "Todos los países a la misma escala y sin distorsión (territorio principal)."
-        : "Todos los estados de esa época a la misma escala; no incluye pueblos sin estado. Fronteras aproximadas.") +
-      " Rueda o pellizco para acercar." +
-      (tiny ? ` ${tiny} ${tiny === 1 ? "país es demasiado pequeño" : "países son demasiado pequeños"} para verse a esta escala.` : "");
+        ? tr(
+            "Todos los países a la misma escala y sin distorsión (territorio principal).",
+            "All countries at the same scale, without distortion (main territory).",
+          )
+        : tr(
+            "Todos los estados de esa época a la misma escala; no incluye pueblos sin estado. Fronteras aproximadas.",
+            "All states of that era at the same scale; stateless peoples not included. Approximate borders.",
+          )) +
+      tr(" Rueda o pellizco para acercar.", " Scroll or pinch to zoom.") +
+      (tiny
+        ? ` ${tiny} ${
+            tiny === 1
+              ? tr("país es demasiado pequeño para verse", "country is too small to see")
+              : tr("países son demasiado pequeños para verse", "countries are too small to see")
+          } ${tr("a esta escala.", "at this scale.")}`
+        : "");
     if (text !== lastHint) hint.textContent = lastHint = text;
   }
 

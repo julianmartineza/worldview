@@ -1,3 +1,5 @@
+import { lang } from "../i18n";
+
 // Nombres en español de las entidades más conocidas; el resto conserva el original del dataset.
 const NAMES: Record<string, string> = {
   "Roman Empire": "Imperio romano",
@@ -112,7 +114,55 @@ const EMPIRES: Record<string, string> = {
   China: "China y sus dependencias",
 };
 
-export function esName(name: string, year: number, isGroup: boolean): string {
+// En inglés el dataset ya sirve; solo se aclaran los nombres ambiguos o abreviados
+const NAMES_EN: Record<string, string> = {
+  Han: "Han Empire (China)",
+  "Han Empire": "Han Empire (China)",
+  "Qing Empire": "Qing Empire (China)",
+  "Manchu Empire": "Manchu Empire (Qing)",
+  "Ming Chinese Empire": "Ming Empire (China)",
+  "Ming Empire": "Ming Empire (China)",
+  "Tang Empire": "Tang Empire (China)",
+  "Song Empire": "Song Empire (China)",
+  "Sui Empire": "Sui Empire (China)",
+  "Jin Empire": "Jin Empire (China)",
+  "Achaemenid Empire": "Achaemenid Empire (Persia)",
+  "Empire of Alexander": "Empire of Alexander the Great",
+  "Eastern Roman Empire": "Byzantine Empire",
+  "Great Khanate": "Great Khanate (Yuan dynasty)",
+  "Seleucid Kingdom": "Seleucid Empire",
+  USA: "United States",
+  "United States of America": "United States",
+};
+
+const EMPIRES_EN: Record<string, string> = {
+  "United Kingdom": "British Empire",
+  England: "England and its possessions",
+  Spain: "Spanish Empire",
+  Portugal: "Portuguese Empire",
+  Netherlands: "Dutch Empire",
+  Russia: "Russian Empire",
+  USSR: "USSR",
+  Italy: "Italy and its colonies",
+  Belgium: "Belgium and its colonies",
+  Denmark: "Denmark and its territories",
+  "Denmark-Norway": "Denmark-Norway and its territories",
+  USA: "United States and its territories",
+  China: "China and its dependencies",
+};
+
+function enName(name: string, year: number, isGroup: boolean): string {
+  if (isGroup) {
+    if (name === "France") return year < 1500 ? "Kingdom of France and its fiefs" : "French colonial empire";
+    if (EMPIRES_EN[name]) return EMPIRES_EN[name];
+    const en = NAMES_EN[name] ?? name;
+    return /empire|caliphate|khanate|ussr/i.test(en) ? en : `${en} and its dependencies`;
+  }
+  return NAMES_EN[name] ?? name;
+}
+
+export function localName(name: string, year: number, isGroup: boolean): string {
+  if (lang === "en") return enName(name, year, isGroup);
   if (isGroup) {
     if (name === "France") return year < 1500 ? "Reino de Francia y sus feudos" : "Imperio colonial francés";
     if (EMPIRES[name]) return EMPIRES[name];

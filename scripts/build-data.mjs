@@ -8,10 +8,10 @@ const OUT = new URL("../public/data/", import.meta.url);
 // Rasgos de world-atlas sin código ISO numérico
 const NO_ID = {
   Kosovo: { cca3: "UNK" },
-  Somaliland: { name: "Somalilandia", region: "Africa" },
-  "N. Cyprus": { name: "Chipre del Norte", region: "Asia" },
-  "Indian Ocean Ter.": { name: "Territorio del Océano Índico", region: "Asia" },
-  "Siachen Glacier": { name: "Glaciar de Siachen", region: "Asia" },
+  Somaliland: { name: "Somalilandia", nameEn: "Somaliland", region: "Africa" },
+  "N. Cyprus": { name: "Chipre del Norte", nameEn: "Northern Cyprus", region: "Asia" },
+  "Indian Ocean Ter.": { name: "Territorio del Océano Índico", nameEn: "Indian Ocean Territories", region: "Asia" },
+  "Siachen Glacier": { name: "Glaciar de Siachen", nameEn: "Siachen Glacier", region: "Asia" },
 };
 
 const topo = JSON.parse(
@@ -33,13 +33,22 @@ for (const g of topo.objects.countries.geometries) {
         iso3: c.cca3,
         name: c.translations?.spa?.common ?? c.name.common,
         officialName: c.translations?.spa?.official ?? c.name.official,
+        nameEn: c.name.common,
+        officialNameEn: c.name.official,
         area: c.area ?? null,
         capital: c.capital?.[0] ?? null,
         region: c.region,
         subregion: c.subregion ?? null,
         flag: c.flag ?? "",
       }
-    : { iso3: null, name: fallback.name ?? g.properties.name, area: null, region: fallback.region ?? null, flag: "" };
+    : {
+        iso3: null,
+        name: fallback.name ?? g.properties.name,
+        nameEn: fallback.nameEn ?? g.properties.name,
+        area: null,
+        region: fallback.region ?? null,
+        flag: "",
+      };
 }
 
 await mkdir(OUT, { recursive: true });

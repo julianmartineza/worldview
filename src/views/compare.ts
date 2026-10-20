@@ -6,6 +6,7 @@ import { setState, state, subscribe } from "../state";
 import type { Country } from "../types";
 import { createSearch } from "../ui/search";
 import { areaOf, dims } from "../ui/measures";
+import { tr } from "../i18n";
 
 type Slot = "a" | "b";
 
@@ -23,16 +24,19 @@ export function createCompare(
     <div class="compare">
       <div class="compare-pickers">
         <div class="picker"><span class="swatch a" aria-hidden="true"></span><div data-slot="a"></div></div>
-        <button class="icon-btn" data-swap aria-label="Intercambiar países" title="Intercambiar">⇄</button>
+        <button class="icon-btn" data-swap aria-label="${tr("Intercambiar países", "Swap countries")}" title="${tr("Intercambiar", "Swap")}">⇄</button>
         <div class="picker"><span class="swatch b" aria-hidden="true"></span><div data-slot="b"></div></div>
       </div>
       <p class="compare-headline" aria-live="polite"></p>
       <div class="compare-body">
         <figure class="compare-figure">
-          <svg role="img" aria-label="Siluetas superpuestas a la misma escala"></svg>
+          <svg role="img" aria-label="${tr("Siluetas superpuestas a la misma escala", "Outlines overlaid at the same scale")}"></svg>
           <figcaption>
-            <span>Misma escala y sin distorsión. Arrastra las siluetas para alinearlas.</span>
-            <label class="check"><input type="checkbox" data-full> Incluir territorios lejanos</label>
+            <span>${tr(
+              "Misma escala y sin distorsión. Arrastra las siluetas para alinearlas.",
+              "Same scale, no distortion. Drag the outlines to line them up.",
+            )}</span>
+            <label class="check"><input type="checkbox" data-full> ${tr("Incluir territorios lejanos", "Include remote territories")}</label>
           </figcaption>
         </figure>
         <div class="compare-stats"></div>
@@ -45,13 +49,13 @@ export function createCompare(
   const stats = el.querySelector<HTMLElement>(".compare-stats")!;
   const pickers = {
     a: createSearch(el.querySelector('[data-slot="a"]')!, world, {
-      label: "Primer país",
-      placeholder: "Primer país…",
+      label: tr("Primer país", "First country"),
+      placeholder: tr("Primer país…", "First country…"),
       onPick: (c) => setState({ compareA: c.key }),
     }),
     b: createSearch(el.querySelector('[data-slot="b"]')!, world, {
-      label: "Segundo país",
-      placeholder: "Segundo país…",
+      label: tr("Segundo país", "Second country"),
+      placeholder: tr("Segundo país…", "Second country…"),
       onPick: (c) => setState({ compareB: c.key }),
     }),
   };
@@ -140,7 +144,10 @@ export function createCompare(
     const A = get(state.compareA);
     const B = get(state.compareB);
     if (!A || !B) {
-      headline.innerHTML = "Elige dos países para verlos uno encima del otro a escala real.";
+      headline.innerHTML = tr(
+        "Elige dos países para verlos uno encima del otro a escala real.",
+        "Pick two countries to see one on top of the other at true scale.",
+      );
       stats.innerHTML = "";
       return;
     }
@@ -148,8 +155,14 @@ export function createCompare(
     const r = areaOf(big) / areaOf(small);
     headline.innerHTML =
       r < 1.05
-        ? `<strong>${esc(label(A))}</strong> y <strong>${esc(label(B))}</strong> tienen casi el mismo tamaño.`
-        : `<strong>${esc(label(big))}</strong> es <strong>${times(r)}</strong> el tamaño de <strong>${esc(label(small))}</strong>. ${esc(label(small))} ocupa el ${pct((100 / r))} de ${esc(label(big))}.`;
+        ? tr(
+            `<strong>${esc(label(A))}</strong> y <strong>${esc(label(B))}</strong> tienen casi el mismo tamaño.`,
+            `<strong>${esc(label(A))}</strong> and <strong>${esc(label(B))}</strong> are almost the same size.`,
+          )
+        : tr(
+            `<strong>${esc(label(big))}</strong> es <strong>${times(r)}</strong> el tamaño de <strong>${esc(label(small))}</strong>. ${esc(label(small))} ocupa el ${pct((100 / r))} de ${esc(label(big))}.`,
+            `<strong>${esc(label(big))}</strong> is <strong>${times(r)}</strong> the size of <strong>${esc(label(small))}</strong>. ${esc(label(small))} covers ${pct((100 / r))} of ${esc(label(big))}.`,
+          );
 
     const dA = dims(A);
     const dB = dims(B);
@@ -171,14 +184,17 @@ export function createCompare(
       <table>
         <thead><tr><th></th><th><span class="swatch a"></span>${esc(label(A))}</th><th><span class="swatch b"></span>${esc(label(B))}</th><th>A/B</th></tr></thead>
         <tbody>
-          ${row("Área", km2(areaOf(A)), km2(areaOf(B)), areaOf(A) / areaOf(B))}
-          ${row("Ancho E–O", km(dA.width), km(dB.width), dA.width / dB.width)}
-          ${row("Alto N–S", km(dA.height), km(dB.height), dA.height / dB.height)}
-          ${row("Distancia más larga", km(dA.diameter), km(dB.diameter), dA.diameter / dB.diameter)}
-          ${row("Del planeta", pct((areaOf(A) / LAND_AREA_KM2) * 100), pct((areaOf(B) / LAND_AREA_KM2) * 100))}
+          ${row(tr("Área", "Area"), km2(areaOf(A)), km2(areaOf(B)), areaOf(A) / areaOf(B))}
+          ${row(tr("Ancho E–O", "Width E–W"), km(dA.width), km(dB.width), dA.width / dB.width)}
+          ${row(tr("Alto N–S", "Height N–S"), km(dA.height), km(dB.height), dA.height / dB.height)}
+          ${row(tr("Distancia más larga", "Longest distance"), km(dA.diameter), km(dB.diameter), dA.diameter / dB.diameter)}
+          ${row(tr("Del planeta", "Of the planet"), pct((areaOf(A) / LAND_AREA_KM2) * 100), pct((areaOf(B) / LAND_AREA_KM2) * 100))}
         </tbody>
       </table>
-      <button class="btn" data-map>Ver ${esc(label(A))} sobre ${esc(label(B))} en el mapa</button>`;
+      <button class="btn" data-map>${tr(
+        `Ver ${esc(label(A))} sobre ${esc(label(B))} en el mapa`,
+        `See ${esc(label(A))} over ${esc(label(B))} on the map`,
+      )}</button>`;
   }
 
   let key = "";

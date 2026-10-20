@@ -10,6 +10,7 @@ import { attachGestures } from "./gestures";
 import { drawGhosts, ghostAt, ghostDrag } from "./truesize";
 import { createRelief } from "./reliefGL";
 import type { Tooltip } from "../ui/tooltip";
+import { tr } from "../i18n";
 
 export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
   const proj = geoOrthographic().clipAngle(90).precision(0.4);
@@ -34,15 +35,18 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
   el.insertAdjacentHTML(
     "beforeend",
     `<div class="map-tools">
-      <label class="check" ${relief.supported ? "" : 'title="Tu navegador no admite WebGL2"'}>
-        <input type="checkbox" data-relief ${relief.supported ? "" : "disabled"}> Relieve de tierra y mar
+      <label class="check" ${relief.supported ? "" : 'title="${tr("Tu navegador no admite WebGL2", "Your browser does not support WebGL2")}"'}>
+        <input type="checkbox" data-relief ${relief.supported ? "" : "disabled"}> ${tr("Relieve de tierra y mar", "Land and sea relief")}
       </label>
       <span class="relief-status" aria-live="polite"></span>
     </div>
     <div class="relief-legend" hidden>
       <div class="relief-bar"></div>
-      <div class="relief-ticks"><span>−8.000 m</span><span>0</span><span>6.000 m</span></div>
-      <small>ETOPO 2022 · NOAA. Sombreado realzado; la esfera no se deforma.</small>
+      <div class="relief-ticks"><span>${tr("−8.000 m", "−8,000 m")}</span><span>0</span><span>${tr("6.000 m", "6,000 m")}</span></div>
+      <small>ETOPO 2022 · NOAA. ${tr(
+        "Sombreado realzado; la esfera no se deforma.",
+        "Shading is exaggerated; the sphere is not deformed.",
+      )}</small>
     </div>`,
   );
   const reliefInput = el.querySelector<HTMLInputElement>("[data-relief]")!;
@@ -59,12 +63,12 @@ export function createGlobe(el: HTMLElement, world: World, tooltip: Tooltip) {
       // Preferencia no guardada; no afecta al uso
     }
     if (on && !relief.ready) {
-      reliefStatus.textContent = "cargando relieve…";
+      reliefStatus.textContent = tr("cargando relieve…", "loading relief…");
       try {
         await relief.load(Math.min(size.w, size.h) * (window.devicePixelRatio || 1) > 1000);
         reliefStatus.textContent = "";
       } catch {
-        reliefStatus.textContent = "no se pudo cargar el relieve";
+        reliefStatus.textContent = tr("no se pudo cargar el relieve", "could not load the relief");
       }
     }
     request();

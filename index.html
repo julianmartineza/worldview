@@ -3,51 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Compara el tamaño real de los países del mundo, sin la distorsión de los mapas comunes." />
-    <title>Tamaño real</title>
+    <meta name="description" content="Compara el tamaño real de los países del mundo, sin la distorsión de los mapas comunes."
+      data-en-content="Compare the true size of the world's countries, without the distortion of common maps." />
+    <title data-en="True size">Tamaño real</title>
   </head>
   <body>
     <div class="app" data-view="globe">
       <header class="top">
         <div class="brand">
-          <h1>Tamaño real</h1>
-          <p>El mundo según lo que de verdad mide cada país</p>
+          <h1 data-en="True size">Tamaño real</h1>
+          <p data-en="The world as each country truly measures">El mundo según lo que de verdad mide cada país</p>
         </div>
-        <nav class="tabs" role="tablist" aria-label="Vistas">
-          <button role="tab" data-view="globe" aria-selected="true">Globo</button>
-          <button role="tab" data-view="map" aria-selected="false">Mapa plano</button>
-          <button role="tab" data-view="wall" aria-selected="false">A escala</button>
-          <button role="tab" data-view="compare" aria-selected="false">Comparar</button>
-        </nav>
+        <div class="top-controls">
+          <nav class="tabs" role="tablist" aria-label="Vistas" data-en-aria-label="Views">
+            <button role="tab" data-view="globe" aria-selected="true" data-en="Globe">Globo</button>
+            <button role="tab" data-view="map" aria-selected="false" data-en="Flat map">Mapa plano</button>
+            <button role="tab" data-view="wall" aria-selected="false" data-en="To scale">A escala</button>
+            <button role="tab" data-view="compare" aria-selected="false" data-en="Compare">Comparar</button>
+          </nav>
+          <div class="lang" role="group" aria-label="Idioma" data-en-aria-label="Language">
+            <button data-lang="es" lang="es" title="Español">ES</button>
+            <button data-lang="en" lang="en" title="English">EN</button>
+          </div>
+        </div>
       </header>
       <main class="layout">
-        <section class="stage" aria-label="Mapa">
+        <section class="stage" aria-label="Mapa" data-en-aria-label="Map">
           <div class="view" id="view-globe">
-            <p class="globe-hint">Arrastra para girar · rueda o pellizco para acercar · toca un país</p>
+            <p class="globe-hint" data-en="Drag to rotate · scroll or pinch to zoom · tap a country">Arrastra para girar · rueda o pellizco para acercar · toca un país</p>
           </div>
           <div class="view" id="view-map" hidden></div>
           <div class="view" id="view-wall" hidden></div>
           <div class="view" id="view-compare" hidden></div>
           <div class="timeline" id="timeline"></div>
           <div class="tooltip" id="tooltip" hidden></div>
-          <p id="loading" class="loading">Cargando mapa…</p>
+          <p id="loading" class="loading" data-en="Loading map…">Cargando mapa…</p>
         </section>
         <aside class="side">
           <div id="search"></div>
           <section class="card" id="info" aria-live="polite"></section>
           <section class="card">
-            <h3>Países en movimiento</h3>
+            <h3 data-en="Countries on the move">Países en movimiento</h3>
             <div id="ghosts"></div>
           </section>
           <section class="card">
-            <h3>Comparaciones que sorprenden</h3>
+            <h3 data-en="Surprising comparisons">Comparaciones que sorprenden</h3>
             <ul class="presets" id="presets"></ul>
           </section>
           <section class="card">
-            <h3>Imperios a escala real</h3>
+            <h3 data-en="Empires at true scale">Imperios a escala real</h3>
             <ul class="presets" id="presets-history"></ul>
           </section>
-          <footer class="sources">
+          <footer
+            class="sources"
+            data-en="Outlines: Natural Earth (1:50 m). Official areas: mledoze/countries (source of REST Countries). Historical borders: historical-basemaps (A. Ourednik), GPL-3.0; they are approximate, especially before 1648. Relief: ETOPO 2022 (NOAA NCEI), public domain. Map areas are computed on a sphere of radius 6,371 km."
+          >
             Contornos: Natural Earth (1:50 m). Áreas oficiales: mledoze/countries (fuente de REST Countries).
             Fronteras históricas: historical-basemaps (A. Ourednik), GPL-3.0; son aproximadas, sobre todo antes de 1648.
             Relieve: ETOPO 2022 (NOAA NCEI), dominio público.
